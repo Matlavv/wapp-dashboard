@@ -2,9 +2,23 @@ services:
     wapp-dashboard:
         build: .
         container_name: wapp-dashboard
-        restart: always
+        restart: unless-stopped
         env_file: .env
-        ports:
-            - '3000:3000'
-        environment:
-            - PORT=3000
+        networks:
+            - proxy
+        labels:
+            - 'traefik.enable=true'
+
+            # Routeur HTTP (Redirection HTTPS souvent gérée globalement, mais on sécurise l'entrée)
+            - 'traefik.http.routers.wapp-dashboard.rule=Host(`wapp-dashboard.matlav.dev`)'
+            - 'traefik.http.routers.wapp-dashboard.entrypoints=websecure'
+
+            # Certificat SSL (Resolver 'myresolver' est le standard, vérifiez votre config Traefik)
+            - 'traefik.http.routers.wapp-dashboard.tls.certresolver=myresolver'
+
+            # Service (Port interne du conteneur)
+            - 'traefik.http.services.wapp-dashboard.loadbalancer.server.port=3000'
+
+networks:
+    proxy:
+        external: true
