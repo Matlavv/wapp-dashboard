@@ -30,10 +30,20 @@ interface User {
     store_origin: string | null;
     language: string | null;
     country: string | null;
+    last_login_at: string | null;
 }
+
+const getCountryName = (code: string) => {
+    try {
+        return new Intl.DisplayNames(['fr'], { type: 'region' }).of(code.toUpperCase()) || code;
+    } catch {
+        return code;
+    }
+};
 
 export const UsersTable = ({ users }: { users: User[] }) => {
     const [loadingId, setLoadingId] = useState<string | null>(null);
+    const [sortField, setSortField] = useState<'created_at' | 'last_login_at'>('created_at');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -56,8 +66,13 @@ export const UsersTable = ({ users }: { users: User[] }) => {
         setLoadingId(null);
     };
 
-    const toggleSort = () => {
-        setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'));
+    const toggleSort = (field: 'created_at' | 'last_login_at') => {
+        if (sortField === field) {
+            setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'));
+        } else {
+            setSortField(field);
+            setSortOrder('desc');
+        }
     };
 
     const filteredUsers = users.filter((user) => {
@@ -69,8 +84,10 @@ export const UsersTable = ({ users }: { users: User[] }) => {
     });
 
     const sortedUsers = [...filteredUsers].sort((a, b) => {
-        const dateA = new Date(a.created_at).getTime();
-        const dateB = new Date(b.created_at).getTime();
+        const valA = sortField === 'last_login_at' ? (a.last_login_at || a.created_at) : a.created_at;
+        const valB = sortField === 'last_login_at' ? (b.last_login_at || b.created_at) : b.created_at;
+        const dateA = new Date(valA).getTime();
+        const dateB = new Date(valB).getTime();
         return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
 
@@ -117,14 +134,35 @@ export const UsersTable = ({ users }: { users: User[] }) => {
                             </th>
                             <th
                                 className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center cursor-pointer hover:text-foreground transition-colors group select-none"
-                                onClick={toggleSort}
+                                onClick={() => toggleSort('last_login_at')}
+                            >
+                                <div className="flex items-center justify-center gap-2">
+                                    <span>Dernière Connexion</span>
+                                    {sortField === 'last_login_at' ? (
+                                        sortOrder === 'desc' ? (
+                                            <ArrowDown className="w-3 h-3" />
+                                        ) : (
+                                            <ArrowUp className="w-3 h-3" />
+                                        )
+                                    ) : (
+                                        <div className="w-3 h-3 opacity-0 group-hover:opacity-30 transition-opacity" />
+                                    )}
+                                </div>
+                            </th>
+                            <th
+                                className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center cursor-pointer hover:text-foreground transition-colors group select-none"
+                                onClick={() => toggleSort('created_at')}
                             >
                                 <div className="flex items-center justify-center gap-2">
                                     <span>Inscription</span>
-                                    {sortOrder === 'desc' ? (
-                                        <ArrowDown className="w-3 h-3" />
+                                    {sortField === 'created_at' ? (
+                                        sortOrder === 'desc' ? (
+                                            <ArrowDown className="w-3 h-3" />
+                                        ) : (
+                                            <ArrowUp className="w-3 h-3" />
+                                        )
                                     ) : (
-                                        <ArrowUp className="w-3 h-3" />
+                                        <div className="w-3 h-3 opacity-0 group-hover:opacity-30 transition-opacity" />
                                     )}
                                 </div>
                             </th>
@@ -202,11 +240,26 @@ export const UsersTable = ({ users }: { users: User[] }) => {
                                 </td>
                                 <td className="px-8 py-5 text-center">
                                     {user.country ? (
-                                        <div className="flex items-center justify-center gap-1.5">
-                                            <span className="text-[10px] font-bold uppercase text-muted-foreground/70 tracking-widest">
-                                                {user.country}
+                                        <div className="flex items-center justify-center gap-1.5" title={getCountryName(user.country)}>
+                                            <span className="text-[10px] font-bold uppercase text-muted-foreground/70 tracking-widest text-ellipsis overflow-hidden whitespace-nowrap max-w-[80px]">
+                                                {getCountryName(user.country)}
                                             </span>
                                         </div>
+                                    ) : (
+                                        <span className="text-[10px] text-muted-foreground/30 font-bold uppercase tracking-tight italic">
+                                            -
+                                        </span>
+                                    )}
+                                </td>
+                                <td className="px-8 py-5 text-center">
+                                    {user.last_login_at ? (
+                                        <span className="text-[11px] font-bold text-muted-foreground">
+                                            {new Date(user.last_login_at).toLocaleDateString('fr-FR', {
+                                                day: 'numeric',
+                                                month: 'short',
+                                                year: 'numeric',
+                                            })}
+                                        </span>
                                     ) : (
                                         <span className="text-[10px] text-muted-foreground/30 font-bold uppercase tracking-tight italic">
                                             -

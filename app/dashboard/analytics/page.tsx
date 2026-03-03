@@ -4,6 +4,15 @@ import { Apple, Calendar, Crown, Globe, Heart, Share2, Smartphone, TrendingUp, U
 
 export const dynamic = 'force-dynamic';
 
+const getCountryName = (code: string) => {
+    if (code === 'Inconnu') return 'Inconnu';
+    try {
+        return new Intl.DisplayNames(['fr'], { type: 'region' }).of(code.toUpperCase()) || code;
+    } catch {
+        return code;
+    }
+};
+
 export default async function AnalyticsPage() {
     const stats = await getDashboardStats();
 
@@ -168,7 +177,7 @@ export default async function AnalyticsPage() {
                                                         {country === 'Inconnu' ? '?' : country.substring(0, 3).toUpperCase()}
                                                     </div>
                                                     <span className="text-sm font-bold opacity-80 capitalize">
-                                                        {country}
+                                                        {getCountryName(country)}
                                                     </span>
                                                 </div>
                                             </td>

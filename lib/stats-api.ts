@@ -13,6 +13,9 @@ export type DashboardStats = {
     countryStats: { [key: string]: number };
     premiumCount: number;
     premiumRate: number;
+    inactive7d: number;
+    inactive14d: number;
+    inactive30d: number;
     logs: any[];
 };
 
@@ -42,7 +45,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
                 .gte('created_at', last24h.toISOString()),
             supabaseAdmin
                 .from('profiles')
-                .select('created_at, store_origin, language, country')
+                .select('created_at, store_origin, language, country, last_login_at')
                 .order('created_at', { ascending: true }),
             supabaseAdmin
                 .from('user_partners')
@@ -59,10 +62,17 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
                 .limit(5),
         ]);
 
-        // Origin and Language stats
         const originStats = { ios: 0, android: 0, other: 0 };
         const languageStats = { fr: 0, en: 0, other: 0 };
         const countryStats: { [key: string]: number } = {};
+
+        let inactive7d = 0;
+        let inactive14d = 0;
+        let inactive30d = 0;
+
+        const date7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const date14d = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+        const date30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
         allProfiles?.forEach((p) => {
             // Origin
@@ -81,6 +91,12 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             } else {
                 countryStats['Inconnu'] = (countryStats['Inconnu'] || 0) + 1;
             }
+
+            // Inactivity
+            const lastActive = p.last_login_at ? new Date(p.last_login_at) : new Date(p.created_at);
+            if (lastActive < date7d) inactive7d++;
+            if (lastActive < date14d) inactive14d++;
+            if (lastActive < date30d) inactive30d++;
         });
 
         // Active users logic
@@ -151,6 +167,9 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             originStats,
             languageStats,
             countryStats,
+            inactive7d,
+            inactive14d,
+            inactive30d,
             logs: cleanupLogs || [],
         };
     } catch (error) {
@@ -168,6 +187,9 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             originStats: { ios: 0, android: 0, other: 0 },
             languageStats: { fr: 0, en: 0, other: 0 },
             countryStats: {},
+            inactive7d: 0,
+            inactive14d: 0,
+            inactive30d: 0,
             logs: [],
         };
     }

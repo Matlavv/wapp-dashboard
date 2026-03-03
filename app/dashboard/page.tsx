@@ -51,6 +51,24 @@ export default async function DashboardPage() {
                 />
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <StatCard
+                    title="Inactifs (> 7j)"
+                    value={stats.inactive7d.toLocaleString()}
+                    change="Utilisateurs"
+                />
+                <StatCard
+                    title="Inactifs (> 14j)"
+                    value={stats.inactive14d.toLocaleString()}
+                    change="Utilisateurs"
+                />
+                <StatCard
+                    title="Inactifs (> 30j)"
+                    value={stats.inactive30d.toLocaleString()}
+                    change="Utilisateurs"
+                />
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Chart with Filters */}
                 <div className="lg:col-span-2">
