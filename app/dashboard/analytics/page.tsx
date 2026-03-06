@@ -1,6 +1,17 @@
 import { GrowthChart } from '@/components/Charts';
+import { RetentionTable } from '@/components/RetentionTable';
 import { getDashboardStats } from '@/lib/stats-api';
-import { Apple, Calendar, Crown, Globe, Heart, Share2, Smartphone, TrendingUp, Users } from 'lucide-react';
+import {
+    Apple,
+    Calendar,
+    Crown,
+    Globe,
+    Heart,
+    Share2,
+    Smartphone,
+    TrendingUp,
+    Users,
+} from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,7 +105,10 @@ export default async function AnalyticsPage() {
                                     <span className="text-sm font-bold opacity-60">Premium</span>
                                 </div>
                                 <span className="text-xl font-black italic">
-                                    {stats.premiumRate}% <span className="text-sm font-bold opacity-40">({stats.premiumCount})</span>
+                                    {stats.premiumRate}%{' '}
+                                    <span className="text-sm font-bold opacity-40">
+                                        ({stats.premiumCount})
+                                    </span>
                                 </span>
                             </div>
                         </div>
@@ -153,6 +167,10 @@ export default async function AnalyticsPage() {
                     </div>
                 </div>
 
+                <div className="md:col-span-2">
+                    <RetentionTable weeklyRetention={stats.weeklyRetention} />
+                </div>
+
                 <div className="md:col-span-2 bg-card border border-border/50 p-8 rounded-3xl shadow-sm">
                     <h3 className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground mb-10">
                         Répartition par Pays
@@ -161,20 +179,31 @@ export default async function AnalyticsPage() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-border/30">
-                                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pays</th>
-                                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Utilisateurs</th>
-                                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Part (%)</th>
+                                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                        Pays
+                                    </th>
+                                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">
+                                        Utilisateurs
+                                    </th>
+                                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">
+                                        Part (%)
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/20">
                                 {Object.entries(stats.countryStats)
                                     .sort(([, a], [, b]) => b - a)
                                     .map(([country, count]) => (
-                                        <tr key={country} className="group hover:bg-secondary/10 transition-colors">
+                                        <tr
+                                            key={country}
+                                            className="group hover:bg-secondary/10 transition-colors"
+                                        >
                                             <td className="py-4 pr-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-7 h-5 bg-secondary/50 rounded flex items-center justify-center text-[9px] font-bold text-muted-foreground/70">
-                                                        {country === 'Inconnu' ? '?' : country.substring(0, 3).toUpperCase()}
+                                                        {country === 'Inconnu'
+                                                            ? '?'
+                                                            : country.substring(0, 3).toUpperCase()}
                                                     </div>
                                                     <span className="text-sm font-bold opacity-80 capitalize">
                                                         {getCountryName(country)}
@@ -189,13 +218,20 @@ export default async function AnalyticsPage() {
                                             <td className="py-4 text-right">
                                                 <div className="flex items-center justify-end gap-3">
                                                     <div className="hidden sm:block w-24 h-1.5 bg-secondary/30 rounded-full overflow-hidden">
-                                                        <div 
-                                                            className="h-full bg-foreground/60 rounded-full" 
-                                                            style={{ width: `${stats.totalUsers > 0 ? (count / stats.totalUsers) * 100 : 0}%` }}
+                                                        <div
+                                                            className="h-full bg-foreground/60 rounded-full"
+                                                            style={{
+                                                                width: `${stats.totalUsers > 0 ? (count / stats.totalUsers) * 100 : 0}%`,
+                                                            }}
                                                         />
                                                     </div>
                                                     <span className="text-xs font-bold text-muted-foreground min-w-[40px]">
-                                                        {stats.totalUsers > 0 ? Math.round((count / stats.totalUsers) * 100) : 0}%
+                                                        {stats.totalUsers > 0
+                                                            ? Math.round(
+                                                                  (count / stats.totalUsers) * 100,
+                                                              )
+                                                            : 0}
+                                                        %
                                                     </span>
                                                 </div>
                                             </td>
@@ -203,7 +239,10 @@ export default async function AnalyticsPage() {
                                     ))}
                                 {Object.keys(stats.countryStats).length === 0 && (
                                     <tr>
-                                        <td colSpan={3} className="text-center py-10 text-xs text-muted-foreground italic">
+                                        <td
+                                            colSpan={3}
+                                            className="text-center py-10 text-xs text-muted-foreground italic"
+                                        >
                                             Aucune donnée disponible
                                         </td>
                                     </tr>

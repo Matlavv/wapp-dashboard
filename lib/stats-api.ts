@@ -17,6 +17,13 @@ export type DashboardStats = {
     inactive14d: number;
     inactive30d: number;
     logs: any[];
+    dailyActiveUsers: { date: string; count: number }[];
+    weeklyRetention: {
+        week: number;
+        percentage: number;
+        activeUsers: number;
+        eligibleUsers: number;
+    }[];
 };
 
 export const getDashboardStats = async (): Promise<DashboardStats> => {
@@ -33,6 +40,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             { count: coupledUsers },
             { count: premiumUsers },
             { data: cleanupLogs },
+            { data: allDailySymptoms },
         ] = await Promise.all([
             supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }),
             supabaseAdmin
@@ -45,7 +53,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
                 .gte('created_at', last24h.toISOString()),
             supabaseAdmin
                 .from('profiles')
-                .select('created_at, store_origin, language, country, last_login_at')
+                .select('id, created_at, store_origin, language, country, last_login_at')
                 .order('created_at', { ascending: true }),
             supabaseAdmin
                 .from('user_partners')
@@ -60,6 +68,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
                 .select('*')
                 .order('created_at', { ascending: false })
                 .limit(5),
+            supabaseAdmin.from('daily_symptoms').select('user_id, created_at'),
         ]);
 
         const originStats = { ios: 0, android: 0, other: 0 };
@@ -152,6 +161,76 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             hourlyGrowth.push({ date: key, count: hourlyAcc });
         }
 
+        // --- 3. Daily Active Users ---
+        const dauMap = new Map<string, Set<string>>();
+        allDailySymptoms?.forEach((record: any) => {
+            const date = new Date(record.created_at).toISOString().split('T')[0];
+            if (!dauMap.has(date)) dauMap.set(date, new Set());
+            dauMap.get(date)!.add(record.user_id);
+        });
+        const dailyActiveUsers = Array.from(dauMap.entries())
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([date, users]) => ({ date, count: users.size }));
+
+        // --- 4. Weekly Retention ---
+        const weekMs = 7 * 24 * 60 * 60 * 1000;
+        const userSignupDate = new Map<string, Date>();
+        allProfiles?.forEach((p: any) => {
+            userSignupDate.set(p.id, new Date(p.created_at));
+        });
+
+        const userActivityWeeks = new Map<string, Set<number>>();
+        allDailySymptoms?.forEach((record: any) => {
+            const signup = userSignupDate.get(record.user_id);
+            if (signup) {
+                const actDate = new Date(record.created_at);
+                const weekNum = Math.floor((actDate.getTime() - signup.getTime()) / weekMs);
+                if (weekNum >= 0) {
+                    if (!userActivityWeeks.has(record.user_id))
+                        userActivityWeeks.set(record.user_id, new Set());
+                    userActivityWeeks.get(record.user_id)!.add(weekNum);
+                }
+            }
+        });
+
+        const maxRetentionWeeks = 20;
+        const weeklyRetention: {
+            week: number;
+            percentage: number;
+            activeUsers: number;
+            eligibleUsers: number;
+        }[] = [];
+        for (let weekIndex = 0; weekIndex < maxRetentionWeeks; weekIndex++) {
+            const minSignupAge = (weekIndex + 1) * weekMs;
+            const cutoffDate = new Date(now.getTime() - minSignupAge);
+            const eligible =
+                allProfiles?.filter((p: any) => new Date(p.created_at) <= cutoffDate) || [];
+
+            if (eligible.length === 0) break;
+
+            if (weekIndex === 0) {
+                weeklyRetention.push({
+                    week: 1,
+                    percentage: 100,
+                    activeUsers: eligible.length,
+                    eligibleUsers: eligible.length,
+                });
+            } else {
+                let activeCount = 0;
+                eligible.forEach((p: any) => {
+                    const weeks = userActivityWeeks.get(p.id);
+                    if (weeks && weeks.has(weekIndex)) activeCount++;
+                });
+                weeklyRetention.push({
+                    week: weekIndex + 1,
+                    percentage:
+                        eligible.length > 0 ? Math.round((activeCount / eligible.length) * 100) : 0,
+                    activeUsers: activeCount,
+                    eligibleUsers: eligible.length,
+                });
+            }
+        }
+
         return {
             totalUsers: totalUsers || 0,
             newUsers24h: newUsers24h || 0,
@@ -171,6 +250,8 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             inactive14d,
             inactive30d,
             logs: cleanupLogs || [],
+            dailyActiveUsers,
+            weeklyRetention,
         };
     } catch (error) {
         console.error('Stats fetch failed:', error);
@@ -191,6 +272,8 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             inactive14d: 0,
             inactive30d: 0,
             logs: [],
+            dailyActiveUsers: [],
+            weeklyRetention: [],
         };
     }
 };

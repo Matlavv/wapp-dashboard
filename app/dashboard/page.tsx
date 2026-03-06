@@ -1,4 +1,5 @@
 import { ActivityList } from '@/components/ActivityList';
+import { DailyActiveUsersChart } from '@/components/DailyActiveUsersChart';
 import { DashboardCharts } from '@/components/DashboardCharts';
 import { StatCard } from '@/components/StatCard';
 import { getDashboardStats } from '@/lib/stats-api';
@@ -12,7 +13,9 @@ export default async function DashboardPage() {
         <div className="p-6 md:p-12 space-y-8">
             <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">Tableau de Bord</h1>
+                    <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">
+                        Tableau de Bord
+                    </h1>
                 </div>
                 <div className="flex gap-4">
                     <div className="px-4 py-2 bg-secondary/50 border border-border/50 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground">
@@ -88,6 +91,9 @@ export default async function DashboardPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Daily Active Users Chart */}
+            <DailyActiveUsersChart dailyActiveUsers={stats.dailyActiveUsers} />
 
             <footer className="mt-20 py-10 opacity-20 text-center">
                 <p className="text-[10px] font-bold tracking-[0.5em] uppercase italic">
