@@ -8,9 +8,11 @@ import {
     Filter,
     Flame,
     Globe,
+    HeartPulse,
     Mail,
     Search,
     Shield,
+    Smile,
     Smartphone,
     Star,
 } from 'lucide-react';
@@ -31,6 +33,8 @@ interface User {
     language: string | null;
     country: string | null;
     last_login_at: string | null;
+    symptoms_count: number;
+    moods_count: number;
 }
 
 const getCountryName = (code: string) => {
@@ -167,6 +171,12 @@ export const UsersTable = ({ users }: { users: User[] }) => {
                                 </div>
                             </th>
                             <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">
+                                Symptômes
+                            </th>
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">
+                                Humeurs
+                            </th>
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">
                                 Streak
                             </th>
                             <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">
@@ -274,6 +284,22 @@ export const UsersTable = ({ users }: { users: User[] }) => {
                                             year: 'numeric',
                                         })}
                                     </span>
+                                </td>
+                                <td className="px-8 py-5 text-center">
+                                    <div className="flex items-center justify-center gap-1.5">
+                                        <HeartPulse className="w-3 h-3 text-muted-foreground/50" />
+                                        <span className="text-sm font-black text-muted-foreground/80">
+                                            {user.symptoms_count}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td className="px-8 py-5 text-center">
+                                    <div className="flex items-center justify-center gap-1.5">
+                                        <Smile className="w-3 h-3 text-muted-foreground/50" />
+                                        <span className="text-sm font-black text-muted-foreground/80">
+                                            {user.moods_count}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td className="px-8 py-5 text-center">
                                     <div className="flex items-center justify-center gap-1.5">

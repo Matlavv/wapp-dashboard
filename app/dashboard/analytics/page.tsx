@@ -7,8 +7,10 @@ import {
     Crown,
     Globe,
     Heart,
+    ListTodo,
     Share2,
     Smartphone,
+    StickyNote,
     TrendingUp,
     Users,
 } from 'lucide-react';
@@ -109,6 +111,24 @@ export default async function AnalyticsPage() {
                                     <span className="text-sm font-bold opacity-40">
                                         ({stats.premiumCount})
                                     </span>
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <StickyNote className="w-5 h-5 text-muted-foreground" />
+                                    <span className="text-sm font-bold opacity-60">Notes (total)</span>
+                                </div>
+                                <span className="text-xl font-black italic">
+                                    {stats.totalNotes}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <ListTodo className="w-5 h-5 text-muted-foreground" />
+                                    <span className="text-sm font-bold opacity-60">Bucket-list (total)</span>
+                                </div>
+                                <span className="text-xl font-black italic">
+                                    {stats.totalBucketList}
                                 </span>
                             </div>
                         </div>

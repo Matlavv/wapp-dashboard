@@ -15,12 +15,29 @@ export default async function UsersPage() {
     perPage: 1000 
   });
 
-  // 3. Fusionner les données
+  // 3. Récupérer stats symptômes et humeurs
+  const [
+    { data: symptoms },
+    { data: moods }
+  ] = await Promise.all([
+    supabaseAdmin.from('daily_symptoms').select('user_id'),
+    supabaseAdmin.from('daily_moods').select('user_id')
+  ]);
+
+  const symptomsCount: Record<string, number> = {};
+  symptoms?.forEach(s => { symptomsCount[s.user_id] = (symptomsCount[s.user_id] || 0) + 1; });
+
+  const moodsCount: Record<string, number> = {};
+  moods?.forEach(m => { moodsCount[m.user_id] = (moodsCount[m.user_id] || 0) + 1; });
+
+  // 4. Fusionner les données
   const usersWithEmail = profiles?.map(profile => {
     const authUser = authUsers.find(u => u.id === profile.auth_uid);
     return {
       ...profile,
-      email: authUser?.email || null
+      email: authUser?.email || null,
+      symptoms_count: symptomsCount[profile.id] || 0,
+      moods_count: moodsCount[profile.id] || 0
     };
   }) || [];
 

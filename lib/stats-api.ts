@@ -24,6 +24,8 @@ export type DashboardStats = {
         activeUsers: number;
         eligibleUsers: number;
     }[];
+    totalNotes: number;
+    totalBucketList: number;
 };
 
 export const getDashboardStats = async (): Promise<DashboardStats> => {
@@ -41,6 +43,8 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             { count: premiumUsers },
             { data: cleanupLogs },
             { data: allDailySymptoms },
+            { count: totalNotes },
+            { count: totalBucketList },
         ] = await Promise.all([
             supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }),
             supabaseAdmin
@@ -69,6 +73,8 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
                 .order('created_at', { ascending: false })
                 .limit(5),
             supabaseAdmin.from('daily_symptoms').select('user_id, created_at'),
+            supabaseAdmin.from('notes').select('*', { count: 'exact', head: true }),
+            supabaseAdmin.from('bucket_list').select('*', { count: 'exact', head: true }),
         ]);
 
         const originStats = { ios: 0, android: 0, other: 0 };
@@ -252,6 +258,8 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             logs: cleanupLogs || [],
             dailyActiveUsers,
             weeklyRetention,
+            totalNotes: totalNotes || 0,
+            totalBucketList: totalBucketList || 0,
         };
     } catch (error) {
         console.error('Stats fetch failed:', error);
@@ -274,6 +282,8 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             logs: [],
             dailyActiveUsers: [],
             weeklyRetention: [],
+            totalNotes: 0,
+            totalBucketList: 0,
         };
     }
 };

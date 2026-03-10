@@ -43,7 +43,7 @@ export default async function DashboardPage() {
                     type="accent"
                 />
                 <StatCard
-                    title="Taux Conversion"
+                    title="% Couples liés"
                     value={`${stats.conversionRate}%`}
                     change="Couples liés"
                 />
