@@ -95,7 +95,7 @@ export default async function AnalyticsPage() {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <Share2 className="w-5 h-5 text-muted-foreground" />
-                                    <span className="text-sm font-bold opacity-60">Conversion</span>
+                                    <span className="text-sm font-bold opacity-60">Couples liés</span>
                                 </div>
                                 <span className="text-xl font-black italic">
                                     {stats.conversionRate}%
